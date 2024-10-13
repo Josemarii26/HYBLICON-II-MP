@@ -4,13 +4,17 @@ Este proyecto utiliza modelos de detección y clasificación de imágenes basado
 
 Para tener claro como funciona el sistema seguiremos el diagrama de flujo inferior, en el que si lo observamos, vemos como primero se realiza un preprocesado de la imagen para evaluar su calidad, si esta es apta, entrara en acción el modelo de IA de detección de personas, si encuentra a personas entonces evaluará su intención de interactuar con el ascensor. En el caso de ser positiva entonces entrarán dos modelos de IA, uno para clasificar a dicha persona según género y edad y otro para evaluar si porta algún objeto de movilidad reducida. Finalmente estos datos se almacenan en un log. 
 
-## Images
+## Diagrama de flujo
 
 ![Diagrama de flujo.](Diagrama_flujo.png "Diagrama de flujo")
 
 ## Links
 
-Descarga los modelos de IA en el siguiente enlace [Enlace de descarga](https://mega.nz/file/PZB2SQja#BzYOVlGi82S3RFb7W31lg9X3nn_U1aBxDC4JgS3LwGc) y pégalos en la carpeta /models
+> [!NOTE]
+> Para cada modelo de IA existe una versión mas pequeña y ligera (version-n) sacrificando algo de precisión y una versión de mayor tamaño (version-x) con toda la precisión posible
+
+Descarga los modelos de IA en el siguiente enlace [Enlace de descarga](https://mega.nz/file/rYwAmaqC#ElfWUIskKuoqOkV78_ozFoeTtU_DVSc4XecLFhtJJQI) y pégalos en la carpeta /models
+
 
 ## Tabla de Contenidos
 
@@ -42,12 +46,15 @@ Este proyecto combina la capacidad de varios modelos de YOLO para:
 - NumPy
 
 ### Instalación de Dependencias
+> [!TIP]
+> Asegurate de tener la versión más reciente de ultralytics y opencv
 
 Ejecuta el siguiente comando para instalar las dependencias necesarias:
 ```
 pip install opencv-python-headless ultralytics numpy
 
 ```
+
 
 ## Estructura del Proyecto
 
@@ -57,7 +64,8 @@ pip install opencv-python-headless ultralytics numpy
     ├── utils.py                     
     ├── image_processing.py          
     ├── model_analysis.py            
-    ├── main.py                      
+    ├── main.py               
+    ├── realTimeCapture.py
 ├── README.md                    
 
 ## Funcionamiento del Proyecto
@@ -81,6 +89,7 @@ python main.py
 ```
 
 2. **Parámetros de Ejecución**:
+
 - **image_path**: Ruta de la imagen que será analizada.
 - **log_file_path**: Ruta del archivo donde se guardarán los resultados de las predicciones.
 - **lift_id**: Identificador del dispositivo (por ejemplo, el ID del ascensor si se está utilizando en un sistema de ascensores).
@@ -101,6 +110,8 @@ Las predicciones se registran en un archivo CSV. Si el archivo no existe, se cre
 - **crutches**: Número de muletas detectadas.
 - **num_people**: Número de personas detectadas.
 - **gender_classification**: Clasificación de género y edad de las personas detectadas (si aplica).
+> [!WARNING]
+> Algunos datos son simplemente de testeo ya que aún no ha quedado definida la salida de dichos datos
 
 ```
 request_id,timestamp,lift_id,model_version,special_objects,wheelchairs,walkers,crutches,num_people,gender_classification
@@ -110,7 +121,7 @@ A1B2C,2024-10-06 14:35:21,LIFT_001,v1.0,1,1,0,0,1,Male_18-60
 ## Funcionalidades del Proyecto
 
 1. **Detección de Personas:**
-El modelo yolo11x-pose.pt es el encargado de identificar personas y su pose dentro de una imagen. Además, se dibujan líneas de referencia en la imagen para facilitar la evaluación de las posiciones clave de las personas.
+El modelo bestY11-pose-n.pt es el encargado de identificar personas y su pose dentro de una imagen. Además, se dibujan líneas de referencia en la imagen para facilitar la evaluación de las posiciones clave de las personas.
 
 2. **Deducción de intencionalidad**
 La imagen procedente de la cámara se divide en tres secciones horizontales iguales con el objetivo de identificar si una persona tiene intención de entrar en el ascensor o no. Para ello se evalua su pose respecto a estas tres referencias con la siguiente casuística:
@@ -124,10 +135,10 @@ La imagen procedente de la cámara se divide en tres secciones horizontales igua
 
 
 3. **Detección de Objetos Especiales:**
-El modelo best18-new.pt detecta objetos como sillas de ruedas, andadores y muletas. Las cajas delimitadoras (bounding boxes) se dibujan en verde en la imagen generada.
+El modelo bestY11-V1-n.pt detecta objetos como sillas de ruedas, andadores y muletas. Las cajas delimitadoras (bounding boxes) se dibujan en verde en la imagen generada.
 
 4. **Clasificación de Género:**
-Una vez detectadas las personas, se extraen los rostros de cada persona y se clasifican utilizando el modelo bestClasiNew2.pt. Los resultados incluyen el género de cada persona detectada, y se muestran junto con la confianza de la predicción.
+Una vez detectadas las personas, se extraen los rostros de cada persona y se clasifican utilizando el modelo bestY11-class-n.pt. Los resultados incluyen el género de cada persona detectada, y se muestran junto con la confianza de la predicción.
 
 5. **Evaluación de la Calidad de la Imagen:**
 Se analiza la imagen para verificar que tenga la calidad suficiente para ser procesada. Se busca evitar procesar imágenes desenfocadas o con franjas unicolor que puedan comprometer los resultados.
